@@ -18,8 +18,8 @@ Produce a fraud risk score and a recommended review threshold. This is a portfol
 4. Fit preprocessing only on training data through scikit-learn pipelines. Exclude `PolicyNumber`, which functions as a row identifier.
 5. Compare a dummy baseline, logistic regression, and a random forest.
 6. Compare class weighting and, if time allows, one training-only resampling method. Apply resampling only to the training data (inside cross-validation folds if CV is used), leaving validation and test distributions unchanged.
-7. Select the model using validation data, choose the decision threshold from the cost analysis, then evaluate the final choice once on the held-out test set.
-8. Report metric variability across repeated stratified cross-validation or several random seeds, since fraud counts in the held-out sets are small.
+7. Select the model using validation average precision. Choose a threshold for each illustrative cost ratio using validation predictions, then evaluate the selected model and thresholds once on the held-out test set.
+8. Assess metric variability within the training data using repeated stratified cross-validation or several random seeds, keeping the original validation and test sets fixed. Fraud counts in the held-out sets are small, so single-split metrics are noisy.
 
 ### Evaluation
 Prioritize precision-recall metrics because fraud is uncommon:
@@ -28,7 +28,7 @@ Prioritize precision-recall metrics because fraud is uncommon:
 - Confusion matrix and percentage of claims flagged for review
 - Fraud cases detected and missed per 1,000 claims
 
-Average precision on the validation set selects the model; the threshold is then chosen from the cost analysis. Accuracy is reported only as supporting context.
+Average precision on the validation set selects the model; thresholds are then chosen from the cost analysis on validation predictions. Accuracy is reported only as supporting context.
 
 ### Threshold selection
 Compare review thresholds using:
