@@ -1,0 +1,10 @@
+# Data (download separately, see README)
+data/
+*.csv
+
+# Python / Jupyter clutter
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+venv/
+.DS_Store
