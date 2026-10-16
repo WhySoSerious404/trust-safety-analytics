@@ -6,7 +6,7 @@
 Can we prioritize vehicle insurance claims for manual fraud review while balancing investigation workload against missed fraud?
 
 ### Dataset
-Use the public Vehicle Insurance Fraud Detection dataset (`fraud_oracle.csv`), containing 15,420 records and 33 columns, with approximately 6% fraud, to be confirmed during exploration. The target is `FraudFound_P`.
+Use the public Vehicle Insurance Fraud Detection dataset (`fraud_oracle.csv`), containing 15,420 records and 33 columns. There are 923 fraud-labelled records (5.99%). The target is `FraudFound_P`.
 
 ### Intended use
 Produce a fraud risk score and a recommended review threshold. This is a portfolio analysis using historical data; the model does not automatically reject claims or establish that fraud occurred.
@@ -14,7 +14,7 @@ Produce a fraud risk score and a recommended review threshold. This is a portfol
 ### Analysis plan
 1. Audit missing values, duplicates, class balance, and feature meanings.
 2. Define the scoring point as initial claim review. Document assumptions about each feature's availability and exclude fields judged unavailable at that point.
-3. Create a 60/20/20 stratified training, validation, and held-out test split (about 9,250 / 3,085 / 3,085 claims, with roughly 185 fraud cases in each of validation and test) after checking duplicates. The dataset lacks a full claim date and customer ID, so chronological and customer-level separation cannot be reliably established. Document these limitations; optionally assess grouping by `RepNumber`.
+3. Create a 60/20/20 stratified training, validation, and held-out test split (9,252 / 3,084 / 3,084 records, with approximately 185 fraud cases in each of validation and test) after checking duplicates. The dataset lacks a full claim date and customer ID, so chronological and customer-level separation cannot be reliably established. Document these limitations; optionally assess grouping by `RepNumber`.
 4. Fit preprocessing only on training data through scikit-learn pipelines. Exclude `PolicyNumber`, which functions as a row identifier.
 5. Compare a dummy baseline, logistic regression, and a random forest.
 6. Compare class weighting and, if time allows, one training-only resampling method. Apply resampling only to the training data (inside cross-validation folds if CV is used), leaving validation and test distributions unchanged.
@@ -47,7 +47,7 @@ The dataset has no full claim date, customer ID, or accompanying data dictionary
 
 Repeated-entity checks are limited to duplicate rows and optional grouping by `RepNumber`, an agent-style identifier; these cannot establish customer-level separation. `PolicyNumber` functions as a row index.
 
-A split by `Year` could provide a coarse temporal sensitivity check, but may produce small or imbalanced subsets. The primary stratified evaluation does not establish performance on future claims.
+Year ranges from 1994 to 1996, with 6,142, 5,195, and 4,083 records respectively. Its meaning must be established before interpreting a year based split as chronological evaluation. A split by Year could provide a coarse sensitivity check, subject to checking class counts. The primary stratified evaluation does not establish performance on future claims.
 
 Review target-related fields, potentially post-investigation information, duplicates, and preprocessing performed before splitting. Document exclusions and unresolved risks.
 
