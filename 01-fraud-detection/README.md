@@ -14,7 +14,11 @@ Produce a fraud risk score and a recommended review threshold. This is a portfol
 ### Analysis plan
 1. Audit missing values, duplicates, class balance, and feature meanings.
 2. Define the scoring point as initial claim review. Document assumptions about each feature's availability and exclude fields judged unavailable at that point.
-3. Create a 60/20/20 stratified training, validation, and held-out test split (9,252 / 3,084 / 3,084 records, with approximately 185 fraud cases in each of validation and test) after checking duplicates. The dataset lacks a full claim date and customer ID, so chronological and customer-level separation cannot be reliably established. Document these limitations; optionally assess grouping by `RepNumber`.
+3. Use a fixed 60/20/20 stratified training, validation, and held-out test split. The completed split contains:
+   - Training: 9,252 records, 554 fraud cases (5.99%).
+   - Validation: 3,084 records, 185 fraud cases (6.00%).
+   - Test: 3,084 records, 184 fraud cases (5.97%).
+   Split membership is saved using PolicyNumber identifiers. The dataset lacks a full claim date and customer ID, so chronological and customer-level separation cannot be reliably established. Document these limitations; optionally assess grouping by RepNumber.
 4. Fit preprocessing only on training data through scikit-learn pipelines. Exclude `PolicyNumber`, which functions as a row identifier.
 5. Compare a dummy baseline, logistic regression, and a random forest.
 6. Compare class weighting and, if time allows, one training-only resampling method. Apply resampling only to the training data (inside cross-validation folds if CV is used), leaving validation and test distributions unchanged.
