@@ -158,15 +158,51 @@ The variation reflects changes in the training sample and fold assignment. Repea
 
 The other models were compared on a single validation split. No paired cross-validation comparison between weighted and unweighted forests was performed.
 
-### Remaining evaluation
-- Precision-recall curve for the selected model against the dummy reference
-- Cost-based threshold selection using validation scores
-- Fault sensitivity comparison
-- Review of influential features against uncertain availability assumptions
-- Final model and threshold freeze
-- One held-out test evaluation
+## Validation threshold analysis
 
-The test set has not been used for model-performance evaluation.
+Thresholds were selected for the weighted random forest by minimizing:
+
+    Scenario cost = FP + c x FN
+
+The search covered every distinct validation score, plus a flag-nothing option. FP cost is set to 1; missed-fraud cost c is 5, 10 or 20. Equal-cost choices favour lower review workload.
+
+| FP:FN cost ratio | Threshold* | Precision | Recall | Review share | Scenario cost |
+|---|---:|---:|---:|---:|---:|
+| 1:5 | 0.5095 | 35.90% | 7.57% | 1.26% | 880 |
+| 1:10 | 0.3305 | 13.07% | 42.16% | 19.36% | 1,589 |
+| 1:20 | 0.1721 | 8.95% | 94.05% | 63.04% | 1,990 |
+
+*Displayed thresholds are rounded; full-precision values are retained in `scenario_results`.
+
+Each choice had lower validation scenario cost than flagging nothing or everything, though at 1:5 the margin over flagging nothing is small (880 vs 925). These comparisons use the same data that selected the thresholds, so they require held-out evaluation.
+
+The three ratios represent different operating points:
+
+- At 1:5, the threshold flags very few claims, so its result rests on a small number of true positives.
+- At 1:10, reviewing about 19% of claims catches about 42% of fraud at 13% precision.
+- At 1:20, reviewing about 63% of claims catches about 94% of fraud at 8.95% precision, requiring substantial review capacity. Approximately 37% of claims remain unreviewed.
+
+The benefit of the model depends heavily on the assumed cost of missed fraud. The 1:10 scenario is carried forward as the primary illustrative scenario, with 1:5 and 1:20 as alternatives. This is not a validated business recommendation.
+
+Costs are hypothetical penalties, not actual financial losses. The formula omits investigation costs for true-positive claims, so review workload is reported separately.
+
+## Fault sensitivity and importance review
+
+Adding Fault increased validation AP from 0.1462 to 0.2097 on a single validation split containing 185 fraud cases. This shows Fault carries predictive information, not that it is available at initial review. Fault remains excluded from the primary model regardless of this result.
+
+The primary forest's leading individual encoded features included the Sedan-Liability policy indicator and Age, with DriverRating categories also among the leaders. Sedan-Liability belongs to the low-fraud Liability group and is affected by the vehicle-label discrepancy documented earlier.
+
+Age is itself a demographic input. Group-level disparities and relationships with excluded demographic fields have not been assessed. DriverRating's availability at initial review is assumed, not known.
+
+Importance values describe training split improvements. They do not establish direction, causation or absence of leakage. Numeric-feature bias, correlated inputs, uncertain field meanings and availability assumptions remain limitations.
+
+No test-set performance has been examined.
+
+### Remaining evaluation
+- Record and commit frozen model settings, feature list,
+  full-precision thresholds, and evaluation plan
+- Evaluate the held-out test set once
+- Report final results and limitations
 
 ## Deliverables
 - Reproducible Colab notebook
