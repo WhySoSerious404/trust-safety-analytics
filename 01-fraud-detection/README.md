@@ -242,6 +242,12 @@ Flag a claim when its primary model score is greater than or equal to the scenar
 
 The 1:10 scenario is an illustrative reporting choice, not a validated business recommendation.
 
+### Saved model
+
+The fitted pipeline, thresholds, input-column list, and primary scenario are saved in Google Drive as frozen_fraud_model.joblib. This artifact is not included in the repository.
+
+Test evaluation will use this saved fitted pipeline and frozen thresholds, with no further fitting or threshold adjustment. No test-set performance has been examined.
+
 ### Held-out evaluation plan
 Evaluate the existing fitted primary pipeline on the test set once. Do not refit on training plus validation.
 
@@ -254,7 +260,6 @@ For each frozen threshold, report:
 - Fraud detected and missed per 1,000 claims
 - Scenario cost and flag-nothing/flag-everything comparisons
 
-Do not adjust features, preprocessing, model settings, or thresholds after inspecting test performance. Report differences from validation honestly.
 
 ### Remaining evaluation
 - Record and commit frozen model settings, feature list,
