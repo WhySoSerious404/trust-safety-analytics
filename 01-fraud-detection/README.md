@@ -120,7 +120,7 @@ The primary stratified evaluation does not establish performance on future claim
 
 ## Initial model results
 
-Weighted random forest achieved the highest validation average precision. Its operational usefulness remains to be assessed through threshold analysis.
+Weighted random forest achieved the highest validation average precision and was selected for the frozen threshold analysis reported below.
 
 | Model | Validation average precision |
 |---|---:|
@@ -196,7 +196,7 @@ Age is itself a demographic input. Group-level disparities and relationships wit
 
 Importance values describe training split improvements. They do not establish direction, causation or absence of leakage. Numeric-feature bias, correlated inputs, uncertain field meanings and availability assumptions remain limitations.
 
-No test-set performance has been examined.
+The sensitivity comparison and importance review did not use test performance to change model choices.
 
 ## Frozen model and threshold choices
 
@@ -261,11 +261,64 @@ For each frozen threshold, report:
 - Scenario cost and flag-nothing/flag-everything comparisons
 
 
-### Remaining evaluation
-- Record and commit frozen model settings, feature list,
-  full-precision thresholds, and evaluation plan
-- Evaluate the held-out test set once
-- Report final results and limitations
+## Held-out test results
+
+At the primary illustrative 1:10 operating point, reviewing 19.55% of test claims caught 39.67% of fraud, at 12.11% precision.
+
+The test set contained 3,084 claims, including 184 fraud cases.
+Evaluation used the saved fitted model and frozen thresholds, without refitting or adjusting choices after seeing test results.
+
+### Ranking performance
+
+| Metric | Validation | Test |
+|---|---:|---:|
+| Average precision | 0.1462 | 0.1247 |
+
+Ranking performance was weaker on the held-out test set.
+
+### Frozen operating points
+
+Detected and missed counts below are standardized per 1,000 total claims, not per 1,000 fraud cases.
+
+| Cost ratio | Precision | Recall | Review share | Fraud detected per 1,000 | Fraud missed per 1,000 |
+|---|---:|---:|---:|---:|---:|
+| 1:5 | 19.51% | 4.35% | 1.33% | 2.59 | 57.07 |
+| 1:10 | 12.11% | 39.67% | 19.55% | 23.67 | 35.99 |
+| 1:20 | 8.44% | 88.59% | 62.61% | 52.85 | 6.81 |
+
+### Confusion-matrix counts
+
+Positive means flagged for fraud review.
+
+| Cost ratio | True positives | False positives | False negatives | True negatives |
+|---|---:|---:|---:|---:|
+| 1:5 | 8 | 33 | 176 | 2,867 |
+| 1:10 | 73 | 530 | 111 | 2,370 |
+| 1:20 | 163 | 1,768 | 21 | 1,132 |
+
+### Illustrative scenario costs
+
+| Cost ratio | Model cost | Flag nothing | Flag everything |
+|---|---:|---:|---:|
+| 1:5 | 913 | 920 | 2,900 |
+| 1:10 | 1,640 | 1,840 | 2,900 |
+| 1:20 | 2,188 | 3,680 | 2,900 |
+
+All three frozen operating points had lower observed test scenario cost than either simple alternative.
+
+At 1:10, cost was 200 units (10.87%) below flagging nothing, the better simple alternative. At 1:5, the improvement was only seven units and rested on eight detected fraud cases.
+
+Costs are hypothetical penalties, not actual financial losses.
+Investigation costs for true-positive claims are omitted; review workload is reported separately.
+
+### Interpretation
+
+The model provides a trade-off between review workload and fraud detection. The primary illustrative scenario catches approximately 40% of fraud while flagging approximately 20% of claims, but most flagged claims are non-fraud.
+
+Higher recall requires substantially more review capacity.
+Real operating costs and capacity constraints would be needed to choose a business threshold.
+
+These findings do not establish future performance, production readiness, or grounds for automated claim denial.
 
 ## Deliverables
 - Reproducible Colab notebook
