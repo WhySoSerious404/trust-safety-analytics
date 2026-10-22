@@ -276,6 +276,8 @@ Evaluation used the saved fitted model and frozen thresholds, without refitting 
 
 Ranking performance was weaker on the held-out test set.
 
+Sampling variation may contribute to the AP difference. However, the training cross-validation SD of 0.023 does not establish whether the validation-to-test drop is attributable to sampling noise.
+
 ### Frozen operating points
 
 Detected and missed counts below are standardized per 1,000 total claims, not per 1,000 fraud cases.
@@ -304,6 +306,8 @@ Positive means flagged for fraud review.
 | 1:10 | 1,640 | 1,840 | 2,900 |
 | 1:20 | 2,188 | 3,680 | 2,900 |
 
+Flag nothing = missed-fraud cost x 184 fraud cases. Flag everything = 2,900 non-fraud claims at FP cost 1.
+
 All three frozen operating points had lower observed test scenario cost than either simple alternative.
 
 At 1:10, cost was 200 units (10.87%) below flagging nothing, the better simple alternative. At 1:5, the improvement was only seven units and rested on eight detected fraud cases.
@@ -321,7 +325,7 @@ Real operating costs and capacity constraints would be needed to choose a busine
 These findings do not establish future performance, production readiness, or grounds for automated claim denial.
 
 ## Deliverables
-- Reproducible Colab notebook
+- Reproducible Colab notebook: 01-fraud-detection/fraud_analysis.ipynb
 - Data-quality findings and per-feature leakage audit
 - Model comparison and precision-recall plots
 - Training-only stability summary
