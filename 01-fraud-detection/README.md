@@ -198,6 +198,64 @@ Importance values describe training split improvements. They do not establish di
 
 No test-set performance has been examined.
 
+## Frozen model and threshold choices
+
+These choices are fixed before the first held-out test evaluation.
+
+### Primary model
+Use the existing weighted random forest pipeline fitted on training data only: `rf_balanced_pipeline`.
+
+Model settings:
+- n_estimators=300
+- min_samples_leaf=5
+- class_weight="balanced"
+- random_state=42
+- n_jobs=-1
+- Other forest settings remain at library defaults.
+
+Retain the existing cleaning and preprocessing:
+- Zero ages and invalid claim-calendar placeholders become missing.
+- age_missing preserves the original zero-age indicator.
+- Numeric inputs use median imputation and standard scaling.
+- Categorical inputs use most-frequent imputation and one-hot encoding.
+- Encoder settings: min_frequency=30 and
+  handle_unknown="infrequent_if_exist".
+
+All learned preprocessing was fitted on training data.
+
+### Frozen inputs
+The 22 input columns before encoding are:
+
+Month, WeekOfMonth, DayOfWeek, Make, AccidentArea, DayOfWeekClaimed, MonthClaimed, WeekOfMonthClaimed, Age, PolicyType, VehiclePrice, Deductible, DriverRating, Days_Policy_Accident, Days_Policy_Claim, PastNumberOfClaims, AgeOfVehicle, PoliceReportFiled, WitnessPresent, AgentType, NumberOfCars, age_missing.
+
+Fault remains excluded. Its sensitivity model will not replace the primary model.
+
+### Frozen thresholds
+
+Flag a claim when its primary model score is greater than or equal to the scenario threshold.
+
+| FP:FN cost ratio | Full-precision threshold | Role |
+|---|---:|---|
+| 1:5 | 0.50949964720280316 | Alternative |
+| 1:10 | 0.33054037832098099 | Primary illustrative scenario |
+| 1:20 | 0.17208923258978076 | Alternative |
+
+The 1:10 scenario is an illustrative reporting choice, not a validated business recommendation.
+
+### Held-out evaluation plan
+Evaluate the existing fitted primary pipeline on the test set once. Do not refit on training plus validation.
+
+Report test average precision once, since all three scenarios use the same model scores.
+
+For each frozen threshold, report:
+- Confusion matrix
+- Precision and recall
+- Number and percentage of claims flagged
+- Fraud detected and missed per 1,000 claims
+- Scenario cost and flag-nothing/flag-everything comparisons
+
+Do not adjust features, preprocessing, model settings, or thresholds after inspecting test performance. Report differences from validation honestly.
+
 ### Remaining evaluation
 - Record and commit frozen model settings, feature list,
   full-precision thresholds, and evaluation plan
