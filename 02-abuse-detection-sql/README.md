@@ -15,7 +15,7 @@ A separate ground-truth file lists which accounts were planted as abusive and wh
 Size: about 20,000 accounts and 300,000 events.
 
 ## Three planted patterns
-1. **Spam ring:** a group of accounts sharing one IP block, posting in short bursts.
+1. **Spam gang:** a group of accounts sharing one IP block, posting in short bursts.
 2. **Account takeover:** a login from a new country, followed by a sudden jump in activity.
 3. **Automated clicking:** accounts generating unusually concentrated click bursts.
 
@@ -24,12 +24,12 @@ Each pattern is made noisy: some legitimate accounts share IPs (offices, househo
 ## Analysis plan
 1. Generate the data and ground-truth file.
 2. Load the CSVs into SQLite.
-3. Write 10 to 12 queries in this order: basic aggregates, joins, a shared-IP self-join, window functions (`ROW_NUMBER`, `LAG`, rolling average), then burst and outlier rules.
+3. Use aggregates, joins, a shared-IP-block self-join, window functions and rolling time-window rules to identify suspicious activity.
 4. Combine the rules into one account-level flag per pattern.
 5. Score each pattern against the ground truth.
 
 ### Historical comparisons
-New-country and activity-spike rules use only events preceding the event being assessed. A minimum history requirement, such as at least five prior events, applies. Future activity must not become part of an earlier baseline.
+New-country checks use only events strictly preceding the login and require at least five prior events. Activity gain compares event counts in the following hour with the preceding hour, excluding events at the login timestamp. Future activity is excluded from the historical baseline. Detection using the full following-hour count is available only after that hour ends.
 
 ## Evaluation
 For each pattern, report:
@@ -42,6 +42,35 @@ Accounts planted with a different pattern count as false positives for pattern-s
 
 Show how precision and recall change when one rule threshold moves, such as the minimum accounts per shared IP block.
 
+## Results
+
+Rules were developed and evaluated on 20,000 synthetic accounts and 300,000 events. Ground-truth labels were excluded from detection inputs and used for evaluation and threshold comparison.
+
+| Pattern | Selected rule | Flagged | Precision | Recall | Review share |
+|---|---|---:|---:|---:|---:|
+| Automated clicking | 5 clicks within 60 seconds | 431 | 59.63% | 85.67% | 2.155% |
+| Spam | 15 distinct accounts posting from one /24 block within 120 seconds | 483 | 82.82% | 100% | 2.415% |
+| Takeover | Unfamiliar-country login followed by hourly activity gain of at least 4 | 348 | 85.63% | 99.33% | 1.740% |
+
+Selected candidates prioritised recall while considering precision and review workload. Review share is the percentage of all accounts flagged.
+Shares should not be added without checking account overlap.
+
+### Error analysis
+
+- Clicking: all 174 legitimate false alarms were genuine click-spike lookalikes. The 43 missed target accounts had no five-click span within 60 seconds.
+- Spam: all 83 legitimate false alarms were shared-network lookalikes. All 400 spam accounts were caught.
+- Takeover: all 50 legitimate false alarms were travel lookalikes. The two missed takeover accounts each had an activity gain of 3, below the selected cutoff.
+- No selected rule flagged accounts belonging to another planted abuse pattern.
+
+### Interpretation and limitations
+
+Behavioural signals can also describe legitimate activity. Flags support manual review, not automatic enforcement.
+
+Thresholds were developed and selected on the same synthetic dataset. Results are in-sample and do not establish effectiveness on unseen or real-world data.
+
+Takeover candidates required at least five strictly earlier events. Activity gain compared the following hour with the preceding hour.
+The sparse preceding-hour baseline limits interpretation, and the full following-hour result is available only after that hour ends.
+
 ## Limitations
 - Synthetic data: rules are tested against patterns the generator planted, so results may be optimistic.
 - Results are in-sample: the same dataset supports rule development and evaluation, with no held-out set.
@@ -49,7 +78,5 @@ Show how precision and recall change when one rule threshold moves, such as the 
 - Rule thresholds are illustrative, not production values.
 
 ## Deliverables
-- Data generator script.
-- SQL file with the queries, each with a one-line comment.
-- Results table per pattern.
-- Short README results section.
+- Colab notebook containing the synthetic data generator, validation checks, SQL detection queries, threshold comparisons and evaluation results.
+- README summarising selected rules, findings and limitations.
